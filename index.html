@@ -2,97 +2,75 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>ভিডিও ডাউনলোডার</title>
+  <title>নয়ন ভিডিও ডাউনলোডার</title>
   <style>
     body {
-      background-color: #121212;
-      color: #ffffff;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .container {
+      background: #111;
+      color: #eee;
+      font-family: Arial;
       text-align: center;
-      background: #1f1f1f;
-      padding: 30px;
-      border-radius: 10px;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
       width: 90%;
       max-width: 500px;
-    }
-
-    input {
-      width: 85%;
-      padding: 10px;
-      margin-top: 20px;
+      margin: 10px auto;
       border-radius: 5px;
-      border: none;
-      outline: none;
     }
-
     button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      background-color: #00aaff;
+      background: #00b894;
       color: white;
       border: none;
-      border-radius: 5px;
-      cursor: pointer;
     }
-
-    #result a {
-      display: block;
-      margin: 10px 0;
-      color: #00ff99;
-      text-decoration: underline;
+    .result {
+      margin-top: 20px;
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    a {
+      color: #00cec9;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>ভিডিও ডাউনলোডার</h2>
-    <form id="downloadForm">
-      <input type="url" id="videoUrl" placeholder="ভিডিও লিংক দিন" required>
-      <br>
-      <button type="submit">ডাউনলোড করুন</button>
-    </form>
-    <div id="result"></div>
-  </div>
+  <h2>নয়ন ভিডিও ডাউনলোডার</h2>
+  <input type="text" id="videoUrl" placeholder="ভিডিও লিংক দিন যেমন: https://www.facebook.com/...">
+  <button onclick="downloadVideo()">ডাউনলোড তথ্য আনুন</button>
+  
+  <div class="result" id="result"></div>
 
   <script>
-    document.getElementById('downloadForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const url = document.getElementById('videoUrl').value;
+    async function downloadVideo() {
+      const url = document.getElementById('videoUrl').value.trim();
       const resultDiv = document.getElementById('result');
+      if (!url) return resultDiv.innerHTML = 'দয়া করে ভিডিও লিংক দিন।';
+
       resultDiv.innerHTML = 'লোড হচ্ছে...';
 
-      try {
-        const response = await fetch(`https://nayan-video-downloader.vercel.app/alldown?url=${encodeURIComponent(url)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+      const proxy = 'https://corsproxy.io/?';
+      const api = `https://nayan-video-downloader.vercel.app/alldown?url=${encodeURIComponent(url)}`;
 
+      try {
+        const response = await fetch(proxy + api);
         const data = await response.json();
 
-        if (data?.result?.length > 0) {
-          let html = '<h3>ডাউনলোড লিংক:</h3>';
-          data.result.forEach(video => {
-            html += `<a href="${video.url}" target="_blank">${video.quality || 'ভিডিও'}</a>`;
-          });
-          resultDiv.innerHTML = html;
+        if (data.success && data.data && data.data.video) {
+          resultDiv.innerHTML = `
+            <h3>${data.data.title || 'ভিডিও'}</h3>
+            <img src="${data.data.thumbnail}" width="200"><br><br>
+            <a href="${data.data.video}" download target="_blank">ডাউনলোড করুন</a>
+          `;
         } else {
-          resultDiv.innerHTML = 'কোনো ডাউনলোড লিংক পাওয়া যায়নি। ভিডিওটি প্রাইভেট বা ভুল লিংক হতে পারে।';
+          resultDiv.innerHTML = 'ভিডিও ডাউনলোড লিংক পাওয়া যায়নি!';
         }
       } catch (err) {
+        resultDiv.innerHTML = 'ত্রুটি হয়েছে! ভিডিও লিংক বা সার্ভার চেক করুন।';
         console.error(err);
-        resultDiv.innerHTML = 'ডাউনলোডে সমস্যা হয়েছে। লিংক ঠিক আছে কি না যাচাই করুন।';
       }
-    });
+    }
   </script>
 </body>
 </html>
