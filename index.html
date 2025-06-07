@@ -1,76 +1,64 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>নয়ন ভিডিও ডাউনলোডার</title>
-  <style>
-    body {
-      background: #111;
-      color: #eee;
-      font-family: Arial;
-      text-align: center;
-      padding: 20px;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      width: 90%;
-      max-width: 500px;
-      margin: 10px auto;
-      border-radius: 5px;
-    }
-    button {
-      background: #00b894;
-      color: white;
-      border: none;
-    }
-    .result {
-      margin-top: 20px;
-      background: #222;
-      padding: 15px;
-      border-radius: 10px;
-    }
-    a {
-      color: #00cec9;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>All Downloader (Direct Video URL)</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+  input[type=text] { width: 80%; padding: 10px; }
+  button { padding: 10px 15px; }
+  video { max-width: 100%; margin-top: 20px; }
+  .download-links { margin-top: 20px; }
+  .error { color: red; }
+</style>
 </head>
 <body>
-  <h2>নয়ন ভিডিও ডাউনলোডার</h2>
-  <input type="text" id="videoUrl" placeholder="ভিডিও লিংক দিন যেমন: https://www.facebook.com/...">
-  <button onclick="downloadVideo()">ডাউনলোড তথ্য আনুন</button>
-  
-  <div class="result" id="result"></div>
+  <h2>All Downloader (Direct Video Link)</h2>
+  <input id="urlInput" type="text" placeholder="সরাসরি ভিডিও লিংক দিন" />
+  <button onclick="fetchVideo()">ডাউনলোড করুন</button>
 
-  <script>
-    async function downloadVideo() {
-      const url = document.getElementById('videoUrl').value.trim();
-      const resultDiv = document.getElementById('result');
-      if (!url) return resultDiv.innerHTML = 'দয়া করে ভিডিও লিংক দিন।';
+  <div id="result"></div>
 
-      resultDiv.innerHTML = 'লোড হচ্ছে...';
+<script>
+async function fetchVideo() {
+  const url = document.getElementById('urlInput').value.trim();
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = '';
 
-      const proxy = 'https://corsproxy.io/?';
-      const api = `https://nayan-video-downloader.vercel.app/alldown?url=${encodeURIComponent(url)}`;
+  if (!url) {
+    resultDiv.innerHTML = '<p class="error">দয়া করে ভিডিও লিংক দিন।</p>';
+    return;
+  }
 
-      try {
-        const response = await fetch(proxy + api);
-        const data = await response.json();
+  try {
+    const apiUrl = 'https://masterapi.fun/api/alldl?url=' + encodeURIComponent(url);
+    const response = await fetch(apiUrl);
+    if (!response.ok) throw new Error('API request failed');
 
-        if (data.success && data.data && data.data.video) {
-          resultDiv.innerHTML = `
-            <h3>${data.data.title || 'ভিডিও'}</h3>
-            <img src="${data.data.thumbnail}" width="200"><br><br>
-            <a href="${data.data.video}" download target="_blank">ডাউনলোড করুন</a>
-          `;
-        } else {
-          resultDiv.innerHTML = 'ভিডিও ডাউনলোড লিংক পাওয়া যায়নি!';
-        }
-      } catch (err) {
-        resultDiv.innerHTML = 'ত্রুটি হয়েছে! ভিডিও লিংক বা সার্ভার চেক করুন।';
-        console.error(err);
-      }
+    const data = await response.json();
+
+    // ধরছি API রেসপন্সে ডাউনলোডের জন্য URLs আছে data.urls
+    if (data && data.urls && data.urls.length > 0) {
+      let linksHTML = '';
+      data.urls.forEach((item, i) => {
+        linksHTML += `<p>Option ${i + 1}: <a href="${item.url}" target="_blank" download>Download</a></p>`;
+      });
+
+      // প্রথম ভিডিও URL দিয়ে ভিডিও দেখানো
+      const firstVideoUrl = data.urls[0].url;
+
+      resultDiv.innerHTML = `
+        <video controls src="${firstVideoUrl}"></video>
+        <div class="download-links">${linksHTML}</div>
+      `;
+    } else {
+      resultDiv.innerHTML = '<p class="error">ভিডিও বা ডাউনলোড লিংক পাওয়া যায়নি।</p>';
     }
-  </script>
+  } catch (err) {
+    resultDiv.innerHTML = `<p class="error">এরর: ${err.message}</p>`;
+  }
+}
+</script>
 </body>
 </html>
