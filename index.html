@@ -1,64 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>All Downloader (Direct Video URL)</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
-  input[type=text] { width: 80%; padding: 10px; }
-  button { padding: 10px 15px; }
-  video { max-width: 100%; margin-top: 20px; }
-  .download-links { margin-top: 20px; }
-  .error { color: red; }
-</style>
+  <meta charset="UTF-8">
+  <title>ChatGPT API Bot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+    }
+    .response {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
-  <h2>All Downloader (Direct Video Link)</h2>
-  <input id="urlInput" type="text" placeholder="সরাসরি ভিডিও লিংক দিন" />
-  <button onclick="fetchVideo()">ডাউনলোড করুন</button>
+  <h1>ChatGPT API Bot</h1>
 
-  <div id="result"></div>
+  <label for="question">Your Question:</label>
+  <input type="text" id="question" placeholder="Ask something..." />
 
-<script>
-async function fetchVideo() {
-  const url = document.getElementById('urlInput').value.trim();
-  const resultDiv = document.getElementById('result');
-  resultDiv.innerHTML = '';
+  <button onclick="askGPT()">Ask GPT</button>
 
-  if (!url) {
-    resultDiv.innerHTML = '<p class="error">দয়া করে ভিডিও লিংক দিন।</p>';
-    return;
-  }
+  <div class="response" id="response"></div>
 
-  try {
-    const apiUrl = 'https://masterapi.fun/api/alldl?url=' + encodeURIComponent(url);
-    const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error('API request failed');
+  <script>
+    async function askGPT() {
+      const question = document.getElementById('question').value.trim();
+      const responseBox = document.getElementById('response');
 
-    const data = await response.json();
+      if (!question) {
+        responseBox.innerHTML = "Please enter a question.";
+        return;
+      }
 
-    // ধরছি API রেসপন্সে ডাউনলোডের জন্য URLs আছে data.urls
-    if (data && data.urls && data.urls.length > 0) {
-      let linksHTML = '';
-      data.urls.forEach((item, i) => {
-        linksHTML += `<p>Option ${i + 1}: <a href="${item.url}" target="_blank" download>Download</a></p>`;
-      });
+      responseBox.innerHTML = "Loading...";
 
-      // প্রথম ভিডিও URL দিয়ে ভিডিও দেখানো
-      const firstVideoUrl = data.urls[0].url;
+      const url = `https://api-aryan-xyz.vercel.app/chatgpt?ask=${encodeURIComponent(question)}&uid=1234&apikey=ArYAN`;
 
-      resultDiv.innerHTML = `
-        <video controls src="${firstVideoUrl}"></video>
-        <div class="download-links">${linksHTML}</div>
-      `;
-    } else {
-      resultDiv.innerHTML = '<p class="error">ভিডিও বা ডাউনলোড লিংক পাওয়া যায়নি।</p>';
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+          responseBox.innerHTML = `<strong>Error:</strong> ${data.error}`;
+        } else {
+          responseBox.innerHTML = `
+            <strong>Q:</strong> ${data.question}<br><br>
+            <strong>A:</strong> ${data.answer}
+          `;
+        }
+      } catch (err) {
+        console.error(err);
+        responseBox.innerHTML = "Something went wrong.";
+      }
     }
-  } catch (err) {
-    resultDiv.innerHTML = `<p class="error">এরর: ${err.message}</p>`;
-  }
-}
-</script>
+  </script>
 </body>
 </html>
