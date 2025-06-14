@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SOAD Video Downloader</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      width: 300px;
+    }
+    video {
+      margin-top: 20px;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎬 SOAD Video Downloader</h1>
+  <input type="text" id="urlInput" placeholder="Paste video link here...">
+  <button onclick="downloadVideo()">Download</button>
+  <div id="videoContainer"></div>
+
+  <script>
+    async function downloadVideo() {
+      const url = document.getElementById('urlInput').value;
+      const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+
+      const container = document.getElementById("videoContainer");
+      container.innerHTML = "";
+
+      if (data.videoUrl) {
+        const video = document.createElement("video");
+        video.src = data.videoUrl;
+        video.controls = true;
+        container.appendChild(video);
+
+        const link = document.createElement("a");
+        link.href = data.videoUrl;
+        link.download = "video.mp4";
+        link.innerText = "⬇️ Click to Download";
+        link.style.display = "block";
+        link.style.marginTop = "10px";
+        container.appendChild(link);
+      } else {
+        container.innerText = data.error || "Something went wrong";
+      }
+    }
+  </script>
+</body>
+</html>
