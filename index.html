@@ -2,58 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SOAD Video Downloader</title>
+  <title>SOAD All Video Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: sans-serif;
-      background: #111;
-      color: #fff;
+      margin: 0;
+      padding: 0;
+      font-family: monospace;
+      background-color: #000;
+      color: #00ff99;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 30px 10px;
     }
-    input, button {
-      padding: 10px;
-      margin: 10px;
-      width: 300px;
+
+    h1 {
+      color: #00ffcc;
+      font-size: 28px;
+      margin-bottom: 20px;
     }
+
+    input {
+      padding: 12px;
+      width: 90%;
+      max-width: 450px;
+      background: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      font-size: 16px;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 25px;
+      font-size: 16px;
+      border-radius: 5px;
+      background-color: #00ff99;
+      color: #000;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00cc88;
+    }
+
     video {
+      margin-top: 25px;
+      max-width: 90%;
+      border: 2px solid #00ffcc;
+      border-radius: 8px;
+    }
+
+    a {
+      margin-top: 10px;
+      color: #00ffff;
+      text-decoration: underline;
+      font-size: 16px;
+    }
+
+    #result {
       margin-top: 20px;
-      max-width: 100%;
     }
   </style>
 </head>
 <body>
-  <h1>🎬 SOAD Video Downloader</h1>
-  <input type="text" id="urlInput" placeholder="Paste video link here...">
-  <button onclick="downloadVideo()">Download</button>
-  <div id="videoContainer"></div>
+  <h1>🎬 SOAD All Video Downloader</h1>
+  <input type="text" id="urlInput" placeholder="Paste any video link...">
+  <button onclick="download()">Download</button>
+
+  <div id="result"></div>
 
   <script>
-    async function downloadVideo() {
-      const url = document.getElementById('urlInput').value;
-      const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
-      const data = await res.json();
+    async function download() {
+      const url = document.getElementById("urlInput").value;
+      const result = document.getElementById("result");
+      result.innerHTML = "⏳ Please wait...";
 
-      const container = document.getElementById("videoContainer");
-      container.innerHTML = "";
+      try {
+        const response = await fetch(`https://masterapi.fun/api/alldl?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
 
-      if (data.videoUrl) {
-        const video = document.createElement("video");
-        video.src = data.videoUrl;
-        video.controls = true;
-        container.appendChild(video);
+        if (!data || !data.url) {
+          result.innerHTML = "❌ Failed to fetch video.";
+          return;
+        }
 
-        const link = document.createElement("a");
-        link.href = data.videoUrl;
-        link.download = "video.mp4";
-        link.innerText = "⬇️ Click to Download";
-        link.style.display = "block";
-        link.style.marginTop = "10px";
-        container.appendChild(link);
-      } else {
-        container.innerText = data.error || "Something went wrong";
+        result.innerHTML = `
+          <video controls src="${data.url}"></video>
+          <a href="${data.url}" download>⬇️ Download Video</a>
+        `;
+      } catch (e) {
+        result.innerHTML = "❌ Error fetching video.";
       }
     }
   </script>
