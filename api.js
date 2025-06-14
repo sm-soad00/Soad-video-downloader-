@@ -1,22 +1,41 @@
-// File path: api/download.js
-import fetch from 'node-fetch';
+import axios from "axios";
+import fs from "fs";
+import { ytdown, ndown, tikdown, twitterdown } from "nayan-media-downloaders";
 
 export default async function handler(req, res) {
   const { url } = req.query;
 
-  if (!url) return res.status(400).json({ error: 'No URL provided' });
+  if (!url) return res.status(400).json({ error: "No URL provided" });
 
   try {
-    const api = `https://masterapi.fun/api/alldl?url=${encodeURIComponent(url)}`;
-    const response = await fetch(api);
-    const data = await response.json();
-
-    if (data && data.url && data.url[0]) {
-      return res.status(200).json({ video: data.url[0].url });
-    } else {
-      return res.status(500).json({ error: 'Failed to fetch video URL' });
+    if (url.includes("facebook.com") || url.includes("fb.watch")) {
+      const result = await ndown(url);
+      return res.json({ platform: "facebook", video: result.data[0].url });
     }
-  } catch (error) {
-    return res.status(500).json({ error: 'Error fetching video' });
+
+    if (url.includes("tiktok.com")) {
+      const result = await tikdown(url);
+      return res.json({ platform: "tiktok", video: result.data.video });
+    }
+
+    if (url.includes("instagram.com")) {
+      const result = await ndown(url);
+      return res.json({ platform: "instagram", video: result.data[0].url });
+    }
+
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      const result = await ytdown(url);
+      return res.json({ platform: "youtube", video: result.data.video });
+    }
+
+    if (url.includes("twitter.com")) {
+      const result = await twitterdown(url);
+      return res.json({ platform: "twitter", video: result.data.HD });
+    }
+
+    return res.status(400).json({ error: "Unsupported URL" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to fetch video" });
   }
 }
