@@ -1,8 +1,10 @@
 {
-  "name": "soad-video-downloader",
+  "name": "video-downloader-api",
   "version": "1.0.0",
+  "main": "api/download.js",
   "type": "module",
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "axios": "^1.6.7",
+    "nayan-media-downloaders": "^1.0.0"
   }
 }
