@@ -72,13 +72,13 @@
 
       let api = "";
       if (url.includes("instagram.com")) {
-        api = `https://api-aryan-xyz.vercel.app/igdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+        api = `/api/proxy?type=ig&url=${encodeURIComponent(url)}`;
       } else if (url.includes("tiktok.com")) {
-        api = `https://api-aryan-xyz.vercel.app/tikdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+        api = `/api/proxy?type=tik&url=${encodeURIComponent(url)}`;
       } else if (url.includes("facebook.com") || url.includes("fb.watch")) {
-        api = `https://api-aryan-xyz.vercel.app/fbdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+        api = `/api/proxy?type=fb&url=${encodeURIComponent(url)}`;
       } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
-        api = `https://api-aryan-xyz.vercel.app/ytdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+        api = `/api/proxy?type=yt&url=${encodeURIComponent(url)}`;
       } else {
         alert("Unsupported link!");
         return;
@@ -90,10 +90,12 @@
         const res = await fetch(api);
         const data = await res.json();
 
-        console.log(data);
+        console.log("API Response:", data);
 
-        // ধরলাম API data.files[0].url দিয়ে ভিডিও আসে
-        let videoUrl = data.url || (data.result && data.result[0]?.url) || (data.files && data.files[0]?.url);
+        let videoUrl =
+          data.url ||
+          (data.result && data.result[0]?.url) ||
+          (data.files && data.files[0]?.url);
 
         if (!videoUrl) {
           document.getElementById("result").innerHTML = "❌ Failed to get video.";
