@@ -1,46 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SOAD All Video Downloader</title>
+  <meta charset="UTF-8">
+  <title>SOAD All Downloader</title>
   <style>
-    body { background: black; color: #00ffcc; font-family: monospace; text-align: center; padding: 2rem; }
-    input, button { font-size: 1rem; padding: 10px; margin: 10px; border-radius: 5px; border: none; }
-    input { width: 80%; max-width: 400px; }
-    button { background: #00ffcc; color: black; }
-    video { margin-top: 20px; max-width: 100%; }
-    .error { color: red; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+    input {
+      width: 60%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #00c853;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #009624;
+    }
+    #result {
+      margin-top: 20px;
+    }
+    video {
+      width: 80%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    a.download-btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #2196f3;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+    a.download-btn:hover {
+      background: #0b79d0;
+    }
   </style>
 </head>
 <body>
-  <h1>🎬 SOAD All Video Downloader</h1>
-  <input type="text" id="videoUrl" placeholder="Paste video link here" />
+  <h1>📥 SOAD All Downloader</h1>
+  <p>Paste any Instagram, TikTok, Facebook, or YouTube link below 👇</p>
+
+  <input type="text" id="urlInput" placeholder="Paste video link here...">
   <br>
-  <button onclick="downloadVideo()">Download</button>
-  <p id="status"></p>
-  <video id="videoPlayer" controls hidden></video>
+  <button onclick="download()">Generate</button>
+
+  <div id="result"></div>
 
   <script>
-    async function downloadVideo() {
-      const url = document.getElementById('videoUrl').value;
-      const status = document.getElementById('status');
-      const player = document.getElementById('videoPlayer');
-      status.textContent = "⏳ Fetching video...";
+    async function download() {
+      const url = document.getElementById("urlInput").value.trim();
+      if (!url) {
+        alert("Please enter a link first!");
+        return;
+      }
+
+      let api = "";
+      if (url.includes("instagram.com")) {
+        api = `https://api-aryan-xyz.vercel.app/igdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+      } else if (url.includes("tiktok.com")) {
+        api = `https://api-aryan-xyz.vercel.app/tikdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+      } else if (url.includes("facebook.com") || url.includes("fb.watch")) {
+        api = `https://api-aryan-xyz.vercel.app/fbdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+      } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
+        api = `https://api-aryan-xyz.vercel.app/ytdl?url=${encodeURIComponent(url)}&apikey=ArYAN`;
+      } else {
+        alert("Unsupported link!");
+        return;
+      }
+
+      document.getElementById("result").innerHTML = "⏳ Fetching video...";
 
       try {
-        const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
+        const res = await fetch(api);
         const data = await res.json();
-        if (data.video) {
-          status.innerHTML = `✅ Platform: ${data.platform}`;
-          player.src = data.video;
-          player.hidden = false;
-        } else {
-          throw new Error(data.error || "Unknown error");
+
+        console.log(data);
+
+        // ধরলাম API data.files[0].url দিয়ে ভিডিও আসে
+        let videoUrl = data.url || (data.result && data.result[0]?.url) || (data.files && data.files[0]?.url);
+
+        if (!videoUrl) {
+          document.getElementById("result").innerHTML = "❌ Failed to get video.";
+          return;
         }
-      } catch (err) {
-        status.innerHTML = `❌ Error: ${err.message}`;
-        player.hidden = true;
+
+        document.getElementById("result").innerHTML = `
+          <video controls>
+            <source src="${videoUrl}" type="video/mp4">
+          </video>
+          <br>
+          <a class="download-btn" href="${videoUrl}" download>⬇ Download</a>
+        `;
+      } catch (e) {
+        document.getElementById("result").innerHTML = "⚠ Error fetching video.";
+        console.error(e);
       }
     }
   </script>
