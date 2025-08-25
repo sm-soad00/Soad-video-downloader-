@@ -2,118 +2,215 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SOAD All Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOAD Downloader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0b0c10;
+      --accent-blue: #66fcf1;
+      --accent-green: #45a29e;
+      --text-color: #c5c6c7;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --border-glow: rgba(102, 252, 241, 0.5);
+      --btn-bg-start: #45a29e;
+      --btn-bg-end: #66fcf1;
+      --btn-text: #0b0c10;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #0f0f0f;
-      color: white;
+      font-family: 'Roboto Mono', monospace;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      padding: 40px;
+      background: var(--card-bg);
+      border-radius: 15px;
+      box-shadow: 0 0 20px var(--border-glow);
       text-align: center;
-      padding: 30px;
     }
-    input {
-      width: 60%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.8em;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-shadow: 0 0 10px var(--accent-blue);
       margin-bottom: 10px;
+      text-transform: uppercase;
     }
-    button {
-      padding: 10px 20px;
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    #urlInput {
+      width: 90%;
+      padding: 15px 20px;
+      border-radius: 50px;
+      border: 2px solid var(--accent-green);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-color);
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    #urlInput::placeholder {
+      color: var(--text-color);
+      opacity: 0.6;
+    }
+
+    #urlInput:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 15px var(--accent-blue);
+    }
+
+    .btn {
+      padding: 12px 40px;
       border: none;
-      border-radius: 8px;
-      background: #00c853;
-      color: white;
+      border-radius: 300px;
+      background: linear-gradient(90deg, var(--btn-bg-start), var(--btn-bg-end));
+      color: var(--btn-text);
       cursor: pointer;
-      font-size: 16px;
+      font-size: 1.1em;
+      font-weight: 700;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
     }
-    button:hover {
-      background: #009624;
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(69, 162, 158, 0.4);
     }
-    #result {
+
+    .btn.loading {
+      cursor: not-allowed;
+      opacity: 0.8;
+      transform: none;
+      box-shadow: none;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    #statusMessage {
       margin-top: 20px;
+      font-size: 1em;
+      min-height: 20px;
     }
-    video {
-      width: 80%;
+
+    .error {
+      color: #ff6347;
+      text-shadow: 0 0 5px rgba(255, 99, 71, 0.5);
+    }
+
+    .success {
+      color: var(--accent-blue);
+      text-shadow: 0 0 5px rgba(102, 252, 241, 0.5);
+    }
+
+    .loading-text {
+      color: var(--accent-green);
+    }
+    
+    #videoPlayer {
+      position: relative;
+      margin-top: 30px;
+      border: 2px solid var(--accent-blue);
       border-radius: 10px;
-      margin-top: 10px;
+      overflow: hidden;
+      min-height: 200px;
     }
-    a.download-btn {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #2196f3;
-      color: white;
+
+    #videoPlayer video {
+      width: 100%;
+      height: auto;
+      display: none; 
+    }
+
+    .download-links {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .download-btn {
+      padding: 12px 30px;
+      border-radius: 50px;
+      background: linear-gradient(90deg, var(--btn-bg-start), var(--btn-bg-end));
+      color: var(--btn-text);
       text-decoration: none;
-      border-radius: 8px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
     }
-    a.download-btn:hover {
-      background: #0b79d0;
+
+    .download-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(69, 162, 158, 0.4);
+    }
+
+    
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #66fcf1;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    
+    #page1, #page2 {
+      transition: opacity 0.5s ease;
+    }
+    #page2 {
+      display: none; 
     }
   </style>
 </head>
 <body>
-  <h1>📥 SOAD All Downloader</h1>
-  <p>Paste any Instagram, TikTok, Facebook, or YouTube link below 👇</p>
+  <div class="container">
+    <h1>SOAD</h1>
+    <p>All Media Downloader - Facebook | TikTok | YouTube | Instagram</p>
 
-  <input type="text" id="urlInput" placeholder="Paste video link here...">
-  <br>
-  <button onclick="download()">Generate</button>
+    <div id="page1">
+      <div class="input-group">
+        <input type="text" id="urlInput" placeholder="Enter social media link here...">
+        <button class="btn" id="downloadBtn">DOWNLOAD</button>
+      </div>
+      <div id="statusMessage"></div>
+    </div>
 
-  <div id="result"></div>
-
-  <script>
-    async function download() {
-      const url = document.getElementById("urlInput").value.trim();
-      if (!url) {
-        alert("Please enter a link first!");
-        return;
-      }
-
-      let api = "";
-      if (url.includes("instagram.com")) {
-        api = `/api/proxy?type=ig&url=${encodeURIComponent(url)}`;
-      } else if (url.includes("tiktok.com")) {
-        api = `/api/proxy?type=tik&url=${encodeURIComponent(url)}`;
-      } else if (url.includes("facebook.com") || url.includes("fb.watch")) {
-        api = `/api/proxy?type=fb&url=${encodeURIComponent(url)}`;
-      } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
-        api = `/api/proxy?type=yt&url=${encodeURIComponent(url)}`;
-      } else {
-        alert("Unsupported link!");
-        return;
-      }
-
-      document.getElementById("result").innerHTML = "⏳ Fetching video...";
-
-      try {
-        const res = await fetch(api);
-        const data = await res.json();
-
-        console.log("API Response:", data);
-
-        let videoUrl =
-          data.url ||
-          (data.result && data.result[0]?.url) ||
-          (data.files && data.files[0]?.url);
-
-        if (!videoUrl) {
-          document.getElementById("result").innerHTML = "❌ Failed to get video.";
-          return;
-        }
-
-        document.getElementById("result").innerHTML = `
-          <video controls>
-            <source src="${videoUrl}" type="video/mp4">
-          </video>
-          <br>
-          <a class="download-btn" href="${videoUrl}" download>⬇ Download</a>
-        `;
-      } catch (e) {
-        document.getElementById("result").innerHTML = "⚠ Error fetching video.";
-        console.error(e);
-      }
-    }
-  </script>
-</body>
-</html>
+    <div id="page2">
+      <div id="videoPlayer">
+        <div c
