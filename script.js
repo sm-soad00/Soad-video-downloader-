@@ -7,33 +7,26 @@ async function getVideo() {
     return;
   }
 
-  result.innerHTML = "⏳ Fetching video...";
+  result.innerHTML = "⏳ Processing...";
 
   try {
-    // 🔥 CORS proxy use
-    const apiUrl = "https://nayan-video-downloader.vercel.app/alldown?url=" + encodeURIComponent(url);
-    const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(apiUrl);
-
-    const res = await fetch(proxy);
+    const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
     const data = await res.json();
 
-    console.log("Response:", data);
+    console.log(data);
 
     if (!data || data.status === false) {
-      result.innerHTML = "❌ Unsupported URL or API failed";
+      result.innerHTML = "❌ Unsupported URL";
       return;
     }
 
     let videoUrl = "";
 
-    // 🔍 detect video link
     if (data.data?.video) {
       videoUrl = data.data.video;
-    } 
-    else if (data.data?.url) {
+    } else if (data.data?.url) {
       videoUrl = data.data.url;
-    } 
-    else if (data.data?.medias && data.data.medias.length > 0) {
+    } else if (data.data?.medias?.length > 0) {
       videoUrl = data.data.medias[0].url;
     }
 
@@ -42,14 +35,13 @@ async function getVideo() {
       return;
     }
 
-    // 🎬 show video
     result.innerHTML = `
       <video controls src="${videoUrl}"></video>
       <a href="${videoUrl}" download class="download">⬇️ Download Video</a>
     `;
 
-  } catch (error) {
-    console.error(error);
-    result.innerHTML = "❌ Server error / CORS blocked!";
+  } catch (err) {
+    console.error(err);
+    result.innerHTML = "❌ Server error!";
   }
 }
